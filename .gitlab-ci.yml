@@ -1,0 +1,34 @@
+# https://docs.gitlab.com/ee/ci/yaml/includes.html
+include:
+
+  - local: '/.gitlab-ci/.python-ci.yml'
+
+
+variables:
+  # https://stackoverflow.com/questions/62539288/where-does-pre-commit-install-environments
+  PRE_COMMIT_HOME: pre-commit/
+
+# Stages are overwritten by the includes
+# We need to define here the deployment we want.
+stages:
+- .pre
+- lint
+- deploy
+- .post
+
+pre-commit:
+  stage: .pre
+  image: python:3.9
+  cache:
+    - key: pre-commit-environment
+      paths:
+        - $PRE_COMMIT_HOME
+  script: pip install pre-commit && pre-commit run -a
+  rules:
+    # This task requires a lot of installation and should have ran locally before the commit
+    # We should only be needing this check before the merge request on the default branch
+    # Nb: push shouldn't be allowed on master
+    - if: '(
+        ($CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main") ||
+        ($CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main")
+        )'

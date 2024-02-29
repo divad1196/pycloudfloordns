@@ -1,0 +1,112 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-docstring-first
+      - id: check-added-large-files
+      - id: check-yaml
+      - id: debug-statements
+      - id: check-merge-conflict
+
+      - id: end-of-file-fixer
+
+
+  # - repo: https://github.com/python/mypy  # Add static typing checks
+  #   rev: 'v1.6.1'
+  #   hooks:
+  #   -   id: mypy
+
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.1.5
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
+
+  - repo: https://github.com/python-poetry/poetry
+    rev: '1.6.0'  # add version here
+    hooks:
+      - id: poetry-check
+      - id: poetry-lock
+      - id: poetry-export
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit  # Nb: .bandit file is ignore by pre-commit hook
+        # args: [--skip, "B320,B410", --recursive, clumper]
+
+
+  # https://github.com/bridgecrewio/checkov/issues/5841
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: 3.2.38
+    hooks:
+      - id: checkov
+      - id: checkov_diff
+      - id: checkov_secrets
+
+  # - repo: https://github.com/bridgecrewio/checkov
+  #   rev: 3.1.16
+  #   hooks:
+  #     - id: checkov_diff
+  #     - id: checkov_secrets
+
+  - repo: https://github.com/semgrep/semgrep
+    rev: v1.48.0
+    hooks:
+      - id: semgrep
+        # This uses the Python "hook" in .pre-commit-hooks.yaml and setup.py.
+        # alt: use 'repo: local', and 'language: docker', which can use
+        # the very latest docker image, which is nice, but is far slower.
+
+        language: python
+
+
+        # Both the .semgrepignore file and the --exclude option
+        # do nothing because the target files are passed
+        # explicitly on the command line by pre-commit!
+        args: [
+            # use osemgrep!
+            #"--experimental",
+            # use jsonnet!
+            # "--config", "semgrep.jsonnet",
+            # classic flag to use in CI or pre-commit, return error code if findings
+            "--quiet",
+            "--error",
+            # "--strict",
+            # "--exclude='examples/*",
+            #"--verbose",
+            "--skip-unknown-extensions",
+            # "--metrics=off",
+          ]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.16.1
+    hooks:
+      - id: gitleaks
+
+
+# black is an opiniated formatter
+# -   repo: https://github.com/ambv/black
+#     rev: 23.9.1
+#     hooks:
+#     - id: black
+#     #   language_version: python3.6
+
+
+# When adding a new hook, we may need to run
+# `pre-commit run --all-files`
+# right after installing the hook (`pre-commit install`)
+# https://stackoverflow.com/questions/54697699/how-to-propertly-configure-my-pre-commit-and-pre-push-hooks
+# -   repo: https://github.com/google/yapf
+#     rev: v0.40.2
+#     hooks:
+#     - id: yapf
+    #   exclude: ^hello\.*\.py$

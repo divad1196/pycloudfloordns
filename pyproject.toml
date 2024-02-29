@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "cloudfloordns"
+version = "0.1.6"
+description = ""
+authors = ["David Gallay <david.gallay.96@gmail.com>"]
+readme = "README.md"
+packages = [{include = "cloudfloordns", from="."}]
+
+# [tool.setuptools.dynamic]
+# version = {attr = ".__version__"}
+
+[tool.poetry.dependencies]
+# https://stackoverflow.com/questions/65945929/poetry-how-to-publish-project-packages-targeting-multiple-python-versions
+python = ">=3.9.0,<4.0.0"
+requests = "^2.31.0"
+pydantic = "^2.6.3"
+# boto3 = {version = "^1.34.52", optional = true}
+
+# [tool.poetry.extras]
+# cli = [
+#     "boto3"
+# ]
+ratelimit = "^2.2.1"
+gevent = "^24.2.1"
+# dnspython = "^2.6.1"  # {extras = ["dnssec", "doh", "idna"], version = "^2.6.1"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
