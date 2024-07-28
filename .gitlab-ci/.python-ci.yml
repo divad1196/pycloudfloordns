@@ -14,36 +14,35 @@ lint:
     - ruff check
   rules:
     # Not useful on merge request since it is done by pre-commit, same when pushing directly on main
-    - if: '(
-      $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_BRANCH != "main"
-    )'
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_BRANCH != "main"'
 
 
-publish_local:
-  stage: deploy
-  script:
-    - pip install build twine
-    - python -m build
-    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
-  rules:
-    # This task requires a lot of installation and should have ran locally before the commit
-    # We should only be needing this check before the merge request on the default branch
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
-    # Nb: push shouldn't be allowed on master
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+# Publication is done on Github
+# publish_local:
+#   stage: deploy
+#   script:
+#     - pip install build twine
+#     - python -m build
+#     - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+#   rules:
+#     # This task requires a lot of installation and should have ran locally before the commit
+#     # We should only be needing this check before the merge request on the default branch
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+#     # Nb: push shouldn't be allowed on master
+#     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
 
-publish_pypi:
-  stage: deploy
-  script:
-    - pip install build twine
-    - python -m build
-    - TWINE_PASSWORD=${PYPI_TOKEN} TWINE_USERNAME=__token__ python -m twine upload dist/*
-  rules:
-    # This task requires a lot of installation and should have ran locally before the commit
-    # We should only be needing this check before the merge request on the default branch
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
-    # Nb: push shouldn't be allowed on master
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+# publish_pypi:
+#   stage: deploy
+#   script:
+#     - pip install build twine
+#     - python -m build
+#     - TWINE_PASSWORD=${PYPI_TOKEN} TWINE_USERNAME=__token__ python -m twine upload dist/*
+#   rules:
+#     # This task requires a lot of installation and should have ran locally before the commit
+#     # We should only be needing this check before the merge request on the default branch
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+#     # Nb: push shouldn't be allowed on master
+#     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
 
 # TODO: Check if the version of the package was updated before the merge
 # (i.e. doesn't exist in the registry)

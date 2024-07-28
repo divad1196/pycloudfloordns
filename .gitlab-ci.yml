@@ -13,11 +13,11 @@ variables:
 stages:
 - .pre
 - lint
-- deploy
+- check
 - .post
 
 pre-commit:
-  stage: .pre
+  stage: check
   image: python:3.9
   cache:
     - key: pre-commit-environment
