@@ -353,9 +353,9 @@ ratelimit==2.2.1 ; python_full_version >= "3.9.0" and python_full_version < "4.0
 requests==2.32.3 ; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
     --hash=sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760 \
     --hash=sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6
-setuptools==71.1.0 ; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
-    --hash=sha256:032d42ee9fb536e33087fb66cac5f840eb9391ed05637b3f2a76a7c8fb477936 \
-    --hash=sha256:33874fdc59b3188304b2e7c80d9029097ea31627180896fb549c578ceb8a0855
+setuptools==72.1.0 ; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
+    --hash=sha256:5a03e1860cf56bb6ef48ce186b0e557fdba433237481a9a625176c2831be15d1 \
+    --hash=sha256:8d243eff56d095e5817f796ede6ae32941278f542e0f941867cc05ae52b162ec
 typing-extensions==4.12.2 ; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
     --hash=sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d \
     --hash=sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8
