@@ -7,12 +7,11 @@ import requests
 import urllib3
 from pydantic import BaseModel, TypeAdapter
 
-from cloudfloordns import Client, Record, Redirect, Zone
+from cloudfloordns import Client
+from cloudfloordns.models import Record, Redirect, Zone
 
 RECORDS_CACHE_FILE = Path(".secrets/all_records.json")
 REDIRECT_CACHE_FILE = Path(".secrets/all_redirects.json")
-
-client = Client()
 
 SerializedMapping = TypeAdapter(List[Tuple[Zone, List[Record]]])
 SerializedRedirects = TypeAdapter(Dict[str, List[Redirect]])
@@ -178,150 +177,156 @@ def filter_externally_managed(client, to_check):
 
 ###################################################################################
 
-all_records_mapping = all_domains_records(client, use_cache=True)
-used_domains = {}
-parked_domains = []
-for domain, records in all_records_mapping.items():
-    _recs = [r for r in records if not (r.is_standard or r.is_redirect)]
-    if _recs:
-        used_domains[domain] = _recs
-    else:
-        parked_domains.append(domain)
 
-redirects = {}
-types = set()
-for z, records in all_records_mapping.items():
-    _zone_redirects = []
-    for r in records:
-        types.add(r.type)
-        if r.is_redirect:
-            _zone_redirects.append(r)
-    if _zone_redirects:
-        redirects[z] = _zone_redirects
+def main():
+    client = Client()
 
-all_targets = all_redirect_targets(
-    client, [z.domainname for z in redirects], use_cache=True
-)
+    all_records_mapping = all_domains_records(client, use_cache=True)
+    used_domains = {}
+    parked_domains = []
+    for domain, records in all_records_mapping.items():
+        _recs = [r for r in records if not (r.is_standard or r.is_redirect)]
+        if _recs:
+            used_domains[domain] = _recs
+        else:
+            parked_domains.append(domain)
 
+    redirects = {}
+    types = set()
+    for z, records in all_records_mapping.items():
+        _zone_redirects = []
+        for r in records:
+            types.add(r.type)
+            if r.is_redirect:
+                _zone_redirects.append(r)
+        if _zone_redirects:
+            redirects[z] = _zone_redirects
 
-# List that link a redirect to its record
-zone_redirect_record = [
-    # zone, key, record, redirect
-]
-for z, zone_records in redirects.items():
-    zone_name = z.domainname
-    zone_targets = all_targets.get(zone_name) or []
+    all_targets = all_redirect_targets(
+        client, [z.domainname for z in redirects], use_cache=True
+    )
 
-    # The usual scenario is to have either 1 target or 1 record
-    # In this case, the association is straight forward
-    # NOTE: it is still possible that the matching are wron
-    #   But we only try to make the association for now
-    if len(zone_targets) == 1:
-        red = zone_targets[0]
-        for rec in zone_records:
+    # List that link a redirect to its record
+    zone_redirect_record = [
+        # zone, key, record, redirect
+    ]
+    for z, zone_records in redirects.items():
+        zone_name = z.domainname
+        zone_targets = all_targets.get(zone_name) or []
+
+        # The usual scenario is to have either 1 target or 1 record
+        # In this case, the association is straight forward
+        # NOTE: it is still possible that the matching are wron
+        #   But we only try to make the association for now
+        if len(zone_targets) == 1:
+            red = zone_targets[0]
+            for rec in zone_records:
+                key = record_key(zone_name, rec)
+                zone_redirect_record.append(
+                    Redirection(
+                        zone=z,
+                        key=key,
+                        record=rec,
+                        redirection=red,
+                    )
+                )
+            continue
+        if len(zone_records) == 1:
+            rec = zone_records[0]
             key = record_key(zone_name, rec)
+            for red in zone_targets:
+                zone_redirect_record.append(  # noqa: PERF401
+                    Redirection(
+                        zone=z,
+                        key=key,
+                        record=rec,
+                        redirection=red,
+                    )
+                )
+            continue
+
+        # Prepare map to consolidate both target and record information
+        _rec_map = {record_key(zone_name, r): r for r in zone_records}
+        _redirect_map = {simplify_url(r.name): r for r in zone_targets}
+        # Group elements with the same keys from both map
+        common_keys = set(_rec_map) & set(_redirect_map)
+        for k in common_keys:
+            rec, red = _rec_map.pop(k, None), _redirect_map.pop(k, None)
             zone_redirect_record.append(
                 Redirection(
                     zone=z,
-                    key=key,
+                    key=k,
                     record=rec,
                     redirection=red,
                 )
             )
-        continue
-    if len(zone_records) == 1:
-        rec = zone_records[0]
-        key = record_key(zone_name, rec)
-        for red in zone_targets:
-            zone_redirect_record.append(  # noqa: PERF401
+        # Create entries for element without match
+        for k, rec in _rec_map.items():
+            zone_redirect_record.append(
                 Redirection(
                     zone=z,
-                    key=key,
+                    key=k,
                     record=rec,
+                    redirection=None,
+                )
+            )
+        for k, red in _redirect_map.items():
+            zone_redirect_record.append(
+                Redirection(
+                    zone=z,
+                    key=k,
+                    record=None,
                     redirection=red,
                 )
             )
-        continue
 
-    # Prepare map to consolidate both target and record information
-    _rec_map = {record_key(zone_name, r): r for r in zone_records}
-    _redirect_map = {simplify_url(r.name): r for r in zone_targets}
-    # Group elements with the same keys from both map
-    common_keys = set(_rec_map) & set(_redirect_map)
-    for k in common_keys:
-        rec, red = _rec_map.pop(k, None), _redirect_map.pop(k, None)
-        zone_redirect_record.append(
-            Redirection(
-                zone=z,
-                key=k,
-                record=rec,
-                redirection=red,
-            )
-        )
-    # Create entries for element without match
-    for k, rec in _rec_map.items():
-        zone_redirect_record.append(
-            Redirection(
-                zone=z,
-                key=k,
-                record=rec,
-                redirection=None,
-            )
-        )
-    for k, red in _redirect_map.items():
-        zone_redirect_record.append(
-            Redirection(
-                zone=z,
-                key=k,
-                record=None,
-                redirection=red,
-            )
-        )
+    zone_redirect_record.sort(key=lambda r: (r.zone.domainname, r.key))
 
-zone_redirect_record.sort(key=lambda r: (r.zone.domainname, r.key))
+    # Filter out the broken redirections (without record or without target)
+    _missing_records = [t for t in zone_redirect_record if not t.record]
+    _missing_redirect = [t for t in zone_redirect_record if not t.redirection]
+    redirections = [t for t in zone_redirect_record if t.record and t.redirection]
 
-# Filter out the broken redirections (without record or without target)
-missing_records = [t for t in zone_redirect_record if not t.record]
-missing_redirect = [t for t in zone_redirect_record if not t.redirection]
-redirections = [t for t in zone_redirect_record if t.record and t.redirection]
+    # for r in redirections:
+    #     print(f"{r.key} -> {r.redirection.dst}")
 
-# for r in redirections:
-#     print(f"{r.key} -> {r.redirection.dst}")
+    #######################################################
+    ########## Check redirection availability #############
+    #######################################################
 
-#######################################################
-########## Check redirection availability #############
-#######################################################
+    # Check if a redirection is active or not and
+    # if it works as expected
+    results = check_redirects(redirections)
 
-# Check if a redirection is active or not and
-# if it works as expected
-results = check_redirects(redirections)
+    grouped = {}
+    for redirect, source, target, urls, status in results:
+        g = grouped.setdefault(status, [])
+        g.append((redirect, source, target, urls))
 
-grouped = {}
-for redirect, source, target, urls, status in results:
-    g = grouped.setdefault(status, [])
-    g.append((redirect, source, target, urls))
+    # Print statistics
+    for k, v in grouped.items():
+        print(f"{k}: {len(v)}")
 
-# Print statistics
-for k, v in grouped.items():
-    print(f"{k}: {len(v)}")
+    # These redirections exists but reach nothing
+    _not_working = sorted(t[1] for t in grouped["not_working"])
+
+    working_redirections = grouped.get("working") or []
+    print("Working redirections:")
+    for redirect, source, target, urls in working_redirections:
+        usage = "<unknown>"
+        name = redirect.zone.domainname
+        if name in used_domains:
+            usage = "USED"
+        elif name in parked_domains:
+            usage = "PARKED"
+        print(f"{redirect.zone.domainname} (usage: {usage}): {source} -> {target}")
+
+    # # print(json.dumps([r.model_dump() for r in redirects[domain]], indent=4))
+
+    # # records = client.records.list(domain)
+    # # for r in client.records.list(domain):
+    # #     print(r.type, r.data, r.is_redirect)
 
 
-# These redirections exists but reach nothing
-not_working = sorted(t[1] for t in grouped["not_working"])
-
-working_redirections = grouped.get("working") or []
-print("Working redirections:")
-for redirect, source, target, urls in working_redirections:
-    usage = "<unknown>"
-    name = redirect.zone.domainname
-    if name in used_domains:
-        usage = "USED"
-    elif name in parked_domains:
-        usage = "PARKED"
-    print(f"{redirect.zone.domainname} (usage: {usage}): {source} -> {target}")
-
-# # print(json.dumps([r.model_dump() for r in redirects[domain]], indent=4))
-
-# # records = client.records.list(domain)
-# # for r in client.records.list(domain):
-# #     print(r.type, r.data, r.is_redirect)
+if __name__ == "__main__":
+    main()

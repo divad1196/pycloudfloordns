@@ -8,6 +8,10 @@ DEFAULT_PRIMARY_NS = "ns1.g02.cfdns.net"
 
 
 class DomainDescription(BaseModel):
+    """
+    Pydantic model
+    """
+
     status: Optional[str]
     status_extended: Optional[str]
 
@@ -16,6 +20,10 @@ class DomainDescription(BaseModel):
 
 
 class Zone(BaseModel):
+    """
+    Pydantic model
+    """
+
     domainname: Annotated[str, StringConstraints(strip_whitespace=True)]
 
     id: Optional[str] = None
@@ -53,6 +61,10 @@ class Zone(BaseModel):
 
 
 class Redirect(BaseModel):
+    """
+    Pydantic model
+    """
+
     name: str = Field(validation_alias=AliasChoices("name", "source", "src"))
     dst: str = Field(
         validation_alias=AliasChoices(

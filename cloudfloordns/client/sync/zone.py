@@ -11,11 +11,11 @@ DEFAULT_PRIMARY_NS = "ns1.g02.cfdns.net"
 
 class Zones:
     def __init__(self, client) -> None:
-        self.client = client
+        self._client = client
 
     # def create(self, domain: str, record: Record, timeout=None):
     #     url = f"/dns/zone/{domain}/record"
-    #     return self.client.post(
+    #     return self._client.post(
     #         url,
     #         data=record.model_dump(),
     #         timeout=timeout,
@@ -50,7 +50,7 @@ class Zones:
             ],  # SOA TTL: Number of seconds this zone may be cached before the source must be consulted again.
         }
         request_data = {**soa_data, **data}
-        return self.client.patch(
+        return self._client.patch(
             url,
             data=request_data,
             timeout=timeout,
@@ -58,7 +58,7 @@ class Zones:
 
     def disable(self, domain: str, timeout=None):
         url = f"/dns/zone/{domain}"
-        return self.client.delete(
+        return self._client.delete(
             url,
             timeout=timeout,
         )
@@ -81,7 +81,7 @@ class Zones:
         url = f"/dns/zone/{domain}/enable"
         # This will create the SOA record
         # The default values can be found on an active domain
-        return self.client.patch(
+        return self._client.patch(
             url,
             data={
                 "domainname": domain,
@@ -109,17 +109,17 @@ class Zones:
         timeout=None,
     ):
         zones = {z.domainname for z in self.list()}
-        domains = [d for d in self.client.domains.list() if d.domainname not in zones]
+        domains = [d for d in self._client.domains.list() if d.domainname not in zones]
 
         # WORKAROUND: Get accurate data per domains,
-        # the nameservers returned by self.client.domains.list() are wrong
-        domains = (self.client.domains.get(d.domainname) for d in domains)
+        # the nameservers returned by self._client.domains.list() are wrong
+        domains = (self._client.domains.get(d.domainname) for d in domains)
         # Don't activate the one that are externally managed
         domains = [d for d in domains if d.nameserver and not d.is_externally_managed]
 
         def worker(domain):
             try:
-                return domain.domainname, self.client.zones.enable(
+                return domain.domainname, self._client.zones.enable(
                     domain,
                     master=master,
                     retry=retry,
@@ -137,7 +137,7 @@ class Zones:
 
     def list(self, timeout=None) -> List[Zone]:
         url = "/dns/zone"
-        res = self.client.get(
+        res = self._client.get(
             url,
             timeout=timeout,
         )
@@ -146,7 +146,7 @@ class Zones:
     def raw_list_redirects(self, zone: str, timeout=None) -> List[dict]:
         url = f"/domain/{zone}/get_domain_forward"
         try:
-            return self.client.get(
+            return self._client.get(
                 url,
                 timeout=timeout,
             )
@@ -180,7 +180,7 @@ class Zones:
         if isinstance(domain, Zone):
             domain = domain.domainname
         url = f"/dns/zone/{domain}/soa"
-        return self.client.get(
+        return self._client.get(
             url,
             timeout=timeout,
         )
@@ -214,8 +214,13 @@ class Zones:
             "xfer": xfer,
         }
         data = {k: v for k, v in data.items() if v is not None}
-        return self.client.patch(
+        return self._client.patch(
             url,
             data=data,
             timeout=timeout,
         )
+
+
+__all__ = [
+    "Zones",
+]

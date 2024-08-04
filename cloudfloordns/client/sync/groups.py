@@ -5,11 +5,11 @@ from cloudfloordns.models import Group
 
 class Groups:
     def __init__(self, client) -> None:
-        self.client = client
+        self._client = client
 
     def list(self, timeout=None) -> List[Group]:
         url = "/manage/groups"
-        res = self.client.get(
+        res = self._client.get(
             url,
             timeout=timeout,
         )
@@ -26,3 +26,8 @@ class Groups:
             timeout=timeout,
         )
         return next((r for r in res if r.name == name), None)
+
+
+__all__ = [
+    "Groups",
+]

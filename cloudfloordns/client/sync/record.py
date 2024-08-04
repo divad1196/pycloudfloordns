@@ -6,11 +6,11 @@ from cloudfloordns.models import Record
 
 class Records:
     def __init__(self, client) -> None:
-        self.client = client
+        self._client = client
 
     def create(self, domain: str, record: Record, timeout=None):
         url = f"/dns/zone/{domain}/record"
-        return self.client.post(
+        return self._client.post(
             url,
             data=record.model_dump(),
             timeout=timeout,
@@ -18,7 +18,7 @@ class Records:
 
     def update(self, domain: str, record_id: str, record: Record, timeout=None):
         url = f"/dns/zone/{domain}/record/{record_id}"
-        return self.client.patch(
+        return self._client.patch(
             url,
             data=record.model_dump(exclude_unset=True),
             timeout=timeout,
@@ -26,7 +26,7 @@ class Records:
 
     def delete(self, domain: str, record_id: str, timeout=None):
         url = f"/dns/zone/{domain}/record/{record_id}"
-        return self.client.delete(
+        return self._client.delete(
             url,
             timeout=timeout,
         )
@@ -34,7 +34,7 @@ class Records:
     def raw_list(self, domain: str, timeout=None) -> List[dict]:
         url = f"/dns/zone/{domain}/record"
         try:
-            return self.client.get(
+            return self._client.get(
                 url,
                 timeout=timeout,
             )
@@ -60,3 +60,8 @@ class Records:
             timeout=timeout,
         )
         return next((r for r in res if r.id == record_id), None)
+
+
+__all__ = [
+    "Records",
+]

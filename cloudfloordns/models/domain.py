@@ -9,6 +9,10 @@ from cloudfloordns.constants import NS1, NS2, NS3, NS4
 
 
 class DomainDescription(BaseModel):
+    """
+    Pydantic model
+    """
+
     status: Optional[str]
     status_extended: Optional[str]
 
@@ -17,6 +21,10 @@ class DomainDescription(BaseModel):
 
 
 class Contact(BaseModel):
+    """
+    Pydantic model
+    """
+
     firstname: Optional[str] = Field(alias="FirstName", default=None)
     lastname: Optional[str] = Field(alias="LastName", default=None)
     companyname: Optional[str] = Field(alias="Organization", default=None)
@@ -53,6 +61,10 @@ class Contact(BaseModel):
 
 
 class DomainPayload(BaseModel):
+    """
+    Pydantic model
+    """
+
     domainname: str
     organisation: Optional[str] = Field(default=None, alias="DomainOrganization")
 
@@ -232,6 +244,10 @@ def is_cloudlfoordns_ns(ns):
 
 
 class Domain(BaseModel):
+    """
+    Pydantic model
+    """
+
     model_config = ConfigDict(
         populate_by_name=True,
         extra="allow",

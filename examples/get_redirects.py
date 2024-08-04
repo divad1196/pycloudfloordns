@@ -1,13 +1,10 @@
 import logging
-import os
 from typing import Dict, List
 
-from cloudfloordns import Client, Record, Redirect, Zone
+from cloudfloordns import Client
+from cloudfloordns.models import Record, Redirect, Zone
 
 logging.getLogger().setLevel(logging.INFO)
-
-USERNAME = os.environ["CLOUDFLOOR_USERNAME"].strip()
-APIKEY = os.environ["CLOUDFLOOR_APIKEY"].strip()
 
 
 def get_redirect_records(client: Client) -> Dict[Zone, List[Record]]:
@@ -35,15 +32,16 @@ def get_redirections(client: Client) -> Dict[Zone, List[Redirect]]:
     return redirections
 
 
-client = Client(USERNAME, APIKEY)
-redirections_mapping = get_redirections(client)
-rules = sorted(
-    (r for redirects in redirections_mapping.values() for r in redirects),
-    key=lambda r: r.src,
-)
+if __name__ == "__main__":
+    client = Client()
+    redirections_mapping = get_redirections(client)
+    rules = sorted(
+        (r for redirects in redirections_mapping.values() for r in redirects),
+        key=lambda r: r.src,
+    )
 
-print("Number of zones:", len(redirections_mapping))
-print("Number of redirections:", len(rules))
+    print("Number of zones:", len(redirections_mapping))
+    print("Number of redirections:", len(rules))
 
-for r in rules:
-    print(f"{r.src} -> {r.dst}")
+    for r in rules:
+        print(f"{r.src} -> {r.dst}")

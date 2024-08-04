@@ -3,6 +3,10 @@
 This repository wraps the cloudfloordns API into a python library.
 The set of features supported is limited to our current usage and may grow accordingly to our needs.
 
+## Documentation
+Documentation can be found [here](https://divad1196.github.io/pycloudfloordns/cloudfloordns.html)
+It is automatically generated using [pdoc](https://pdoc.dev/docs/pdoc.html#deploying-to-github-pages)
+
 ## Features
 All features can be accessed through the `Client` class:
 * Generic get/post/patch/delete methods that handle the result errors

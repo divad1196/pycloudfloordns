@@ -143,6 +143,11 @@ class BaseClient:
 
 
 class Client(BaseClient):
+    records: Records
+    zones: Zones
+    domains: Domains
+    groups: Groups
+
     def __init__(
         self, username=None, apikey=None, url=DEFAULT_BASE_URL, throttling=True
     ) -> None:
@@ -167,3 +172,8 @@ class Client(BaseClient):
 
     def all_domains_records(self) -> Dict[Zone, List[Record]]:
         return dict(self.yield_all_domains_records())
+
+
+__all__ = [
+    "Client",
+]

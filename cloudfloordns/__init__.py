@@ -1,11 +1,7 @@
-from . import constants, utils
+from . import client, models
 from .client import Client
-from .models import (
-    Contact,
-    Domain,
-    DomainPayload,
-    Group,
-    Record,
-    Redirect,
-    Zone,
-)
+
+__all__ = [
+    "client",
+    "models",
+]

@@ -1,5 +1,5 @@
 # from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, StringConstraints
 from typing_extensions import Annotated
@@ -8,9 +8,13 @@ DEFAULT_PRIMARY_NS = "ns1.g02.cfdns.net"
 
 
 class Group(BaseModel):
-    id: str = None
+    """
+    Pydantic model
+    """
+
+    id: Optional[str] = None
     name: Annotated[str, StringConstraints(strip_whitespace=True)]
-    description: str = None
+    description: Optional[str] = None
     dnsservers: List[str] = Field(default_factory=list)
 
     class Config:

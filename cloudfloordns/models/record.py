@@ -55,6 +55,10 @@ REDIRECT_VALUES = list(
 
 
 class Record(BaseModel):
+    """
+    Pydantic model
+    """
+
     name: str
     type: str
     data: str
