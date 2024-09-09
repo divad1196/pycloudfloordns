@@ -17,7 +17,7 @@ documentation = "https://divad1196.github.io/pycloudfloordns"
 # https://stackoverflow.com/questions/65945929/poetry-how-to-publish-project-packages-targeting-multiple-python-versions
 python = ">=3.9.0,<4.0.0"
 requests = "^2.31.0"
-pydantic = "^2.6.3"
+pydantic = "^2.9.1"
 ratelimit = "^2.2.1"
 gevent = "^24.2.1"
 # dnspython = "^2.6.1"  # {extras = ["dnssec", "doh", "idna"], version = "^2.6.1"}
