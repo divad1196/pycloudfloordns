@@ -4,6 +4,7 @@ import os
 from typing import Dict, Iterable, List, Tuple
 
 import requests
+import requests.auth
 from ratelimit import RateLimitException, limits, sleep_and_retry
 
 from .domain import Domains
@@ -16,7 +17,7 @@ DEFAULT_HEADERS = {
     "Content-Type": "application/json",
 }
 
-DEFAULT_BASE_URL = "https://apiv2.mtgsy.net/api/v1"
+DEFAULT_BASE_URL = "https://apiv3.mtgsy.net/api/v1"
 
 
 class BaseClient:
@@ -44,18 +45,15 @@ class BaseClient:
             )
         if not data:
             data = {}
-        request_data = {
-            **data,
-            "username": self._username,
-            "apikey": self._apikey,
-        }
         url = f"{self._url}{url}"
         error_message = "Unknown error"
+
         response = requests.request(
             method,
             url,
+            auth=requests.auth.HTTPBasicAuth(self._username, self._apikey),
             headers=DEFAULT_HEADERS,
-            data=json.dumps(request_data),
+            data=json.dumps(data),
             allow_redirects=True,
             timeout=timeout,
         )

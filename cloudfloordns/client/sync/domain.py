@@ -2,7 +2,7 @@
 from collections import ChainMap
 from typing import List, Optional, Union
 
-from cloudfloordns.models import Contact, Domain, DomainPayload
+from cloudfloordns.models import Contact, Domain, DomainPayload, TLDPrice
 
 DEFAULT_PRIMARY_NS = "ns1.g02.cfdns.net"
 DEFAULT_LIMIT = 99999
@@ -12,7 +12,18 @@ class Domains:
     def __init__(self, client) -> None:
         self._client = client
 
-    def raw_list(self, limit=None, offset=None, timeout=None) -> List[Domain]:
+    def _raw_pricelist(self, timeout=None):
+        url = "/domain/tld/pricelist"
+        return self.client.get(
+            url,
+            timeout=timeout,
+        )
+
+    def get_pricelist(self, timeout=None) -> List[TLDPrice]:
+        res = self._raw_pricelist(timeout=timeout)
+        return [TLDPrice.model_validate(d) for d in res]
+
+    def _raw_list(self, limit=None, offset=None, timeout=None):
         """
         List all domains
         """
@@ -30,7 +41,7 @@ class Domains:
         """
         List all domains
         """
-        res = self.raw_list(limit=limit, offset=offset, timeout=timeout)
+        res = self._raw_list(limit=limit, offset=offset, timeout=timeout)
         return [Domain.model_validate(d) for d in res]
 
     def get_by_name(self, domainname, zone_enabled=None, timeout=None):
