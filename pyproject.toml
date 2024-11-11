@@ -19,7 +19,7 @@ python = ">=3.9.0,<4.0.0"
 requests = "^2.31.0"
 pydantic = "^2.6.3"
 ratelimit = "^2.2.1"
-gevent = "^24.2.1"
+gevent = "^24.11.1"
 # dnspython = "^2.6.1"  # {extras = ["dnssec", "doh", "idna"], version = "^2.6.1"}
 
 [build-system]
