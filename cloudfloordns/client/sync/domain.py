@@ -27,13 +27,13 @@ class Domains:
         """
         List all domains
         """
-        data = {"limit": limit or DEFAULT_LIMIT}
+        params = {"limit": limit or DEFAULT_LIMIT}
         if offset:
-            data["offset"] = offset
+            params["offset"] = offset
         url = "/domain"
         return self._client.get(
             url,
-            data=data,
+            params=params,
             timeout=timeout,
         )
 

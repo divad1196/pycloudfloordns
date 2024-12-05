@@ -38,7 +38,7 @@ class BaseClient:
         self._url = url.rstrip("/")
         self._throttling = throttling
 
-    def _request(self, method, url, data=None, timeout=None):
+    def _request(self, method, url, data=None, params=None, timeout=None):
         if not url.startswith("/"):
             raise Exception(
                 f"url '{url}' is invalid: must be a path with a leading '/' "
@@ -51,6 +51,7 @@ class BaseClient:
         response = requests.request(
             method,
             url,
+            params=params,
             auth=requests.auth.HTTPBasicAuth(self._username, self._apikey),
             headers=DEFAULT_HEADERS,
             data=json.dumps(data),
@@ -73,17 +74,17 @@ class BaseClient:
             raise Exception(error_message)
         return res.get("data")
 
-    def _get(self, url, data=None, timeout=None, throttling=None):
-        return self._request("GET", url, data=data, timeout=timeout)
+    def _get(self, url, data=None, params=None, timeout=None, throttling=None):
+        return self._request("GET", url, data=data, params=params, timeout=timeout)
 
-    def _post(self, url, data=None, timeout=None, throttling=None):
-        return self._request("POST", url, data=data, timeout=timeout)
+    def _post(self, url, data=None, params=None, timeout=None, throttling=None):
+        return self._request("POST", url, data=data, params=params, timeout=timeout)
 
-    def _patch(self, url, data=None, timeout=None, throttling=None):
-        return self._request("PATCH", url, data=data, timeout=timeout)
+    def _patch(self, url, data=None, params=None, timeout=None, throttling=None):
+        return self._request("PATCH", url, data=data, params=params, timeout=timeout)
 
-    def _delete(self, url, data=None, timeout=None, throttling=None):
-        return self._request("DELETE", url, data=data, timeout=timeout)
+    def _delete(self, url, data=None, params=None, timeout=None, throttling=None):
+        return self._request("DELETE", url, data=data, params=params, timeout=timeout)
 
     # https://stackoverflow.com/questions/401215/how-to-limit-rate-of-requests-to-web-services-in-python
     # @sleep_and_retry
@@ -93,51 +94,51 @@ class BaseClient:
 
     @sleep_and_retry
     @limits(calls=120, period=60)
-    def _limited_get(self, url, data=None, timeout=None):
-        return self._get(url, data=data, timeout=timeout)
+    def _limited_get(self, url, data=None, params=None, timeout=None):
+        return self._get(url, data=data, params=params, timeout=timeout)
 
     @sleep_and_retry
     @limits(calls=30, period=60)
-    def _limited_post(self, url, data=None, timeout=None):
-        return self._post(url, data=data, timeout=timeout)
+    def _limited_post(self, url, data=None, params=None, timeout=None):
+        return self._post(url, data=data, params=params, timeout=timeout)
 
     @sleep_and_retry
     @limits(calls=60, period=60)
-    def _limited_patch(self, url, data=None, timeout=None):
-        return self._patch(url, data=data, timeout=timeout)
+    def _limited_patch(self, url, data=None, params=None, timeout=None):
+        return self._patch(url, data=data, params=params, timeout=timeout)
 
     @sleep_and_retry
     @limits(calls=30, period=60)
-    def _limited_delete(self, url, data=None, timeout=None):
-        return self._delete(url, data=data, timeout=timeout)
+    def _limited_delete(self, url, data=None, params=None, timeout=None):
+        return self._delete(url, data=data, params=params, timeout=timeout)
 
-    def get(self, url, data=None, timeout=None, throttling=None):
+    def get(self, url, data=None, params=None, timeout=None, throttling=None):
         if throttling is None:
             throttling = self._throttling
         if throttling:
-            return self._limited_get(url, data=data, timeout=timeout)
-        return self._get(url, data=data, timeout=timeout)
+            return self._limited_get(url, data=data, params=params, timeout=timeout)
+        return self._get(url, data=data, params=params, timeout=timeout)
 
-    def post(self, url, data=None, timeout=None, throttling=None):
+    def post(self, url, data=None, params=None, timeout=None, throttling=None):
         if throttling is None:
             throttling = self._throttling
         if throttling:
-            return self._limited_post(url, data=data, timeout=timeout)
-        return self._post(url, data=data, timeout=timeout)
+            return self._limited_post(url, data=data, params=params, timeout=timeout)
+        return self._post(url, data=data, params=params, timeout=timeout)
 
-    def patch(self, url, data=None, timeout=None, throttling=None):
+    def patch(self, url, data=None, params=None, timeout=None, throttling=None):
         if throttling is None:
             throttling = self._throttling
         if throttling:
-            return self._limited_patch(url, data=data, timeout=timeout)
-        return self._patch(url, data=data, timeout=timeout)
+            return self._limited_patch(url, data=data, params=params, timeout=timeout)
+        return self._patch(url, data=data, params=params, timeout=timeout)
 
-    def delete(self, url, data=None, timeout=None, throttling=None):
+    def delete(self, url, data=None, params=None, timeout=None, throttling=None):
         if throttling is None:
             throttling = self._throttling
         if throttling:
-            return self._limited_delete(url, data=data, timeout=timeout)
-        return self._delete(url, data=data, timeout=timeout)
+            return self._limited_delete(url, data=data, params=params, timeout=timeout)
+        return self._delete(url, data=data, params=params, timeout=timeout)
 
 
 class Client(BaseClient):
