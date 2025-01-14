@@ -20,6 +20,21 @@ class DomainDescription(BaseModel):
         extra = "allow"
 
 
+class TLDPrice(BaseModel):
+    id: int
+    tld: str
+    register_price: float = Field(alias="register", default=None)
+    renewal_price: float = Field(alias="renewal", default=None)
+    transfer_price: float = Field(alias="transfer", default=None)
+    currency: str
+    maxyears: int
+    special: str
+    zone_info: str
+
+    class Config:
+        extra = "allow"
+
+
 class Contact(BaseModel):
     """
     Pydantic model
