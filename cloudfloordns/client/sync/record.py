@@ -31,7 +31,7 @@ class Records:
             timeout=timeout,
         )
 
-    def raw_list(self, domain: str, timeout=None) -> List[dict]:
+    def _raw_list(self, domain: str, timeout=None) -> List[dict]:
         url = f"/dns/zone/{domain}/record"
         try:
             return self._client.get(
@@ -44,11 +44,11 @@ class Records:
             raise
 
     def list(self, domain: str, timeout=None) -> List[Record]:
-        res = self.raw_list(domain, timeout=timeout)
+        res = self._raw_list(domain, timeout=timeout)
         return [Record(**d) for d in res]
 
     def raw_get(self, domain: str, record_id, timeout=None):
-        res = self.raw_list(
+        res = self._raw_list(
             domain,
             timeout=timeout,
         )

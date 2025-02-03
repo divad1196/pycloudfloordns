@@ -8,7 +8,11 @@
 
 name: Upload Python Package
 
-on: [pull_request, workflow_dispatch]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
