@@ -1,4 +1,5 @@
 # from dataclasses import dataclass, field
+import datetime
 import logging
 from collections import ChainMap
 from typing import Any, List, Literal, Optional
@@ -15,21 +16,6 @@ class DomainDescription(BaseModel):
 
     status: Optional[str]
     status_extended: Optional[str]
-
-    class Config:
-        extra = "allow"
-
-
-class TLDPrice(BaseModel):
-    id: int
-    tld: str
-    register_price: float = Field(alias="register", default=None)
-    renewal_price: float = Field(alias="renewal", default=None)
-    transfer_price: float = Field(alias="transfer", default=None)
-    currency: str
-    maxyears: int
-    special: str
-    zone_info: str
 
     class Config:
         extra = "allow"
@@ -343,7 +329,7 @@ class Domain(BaseModel):
     use_trustee: Optional[str] = None
     locked: Optional[str] = None
     editzone: Optional[str] = None
-    expires: Optional[str] = None
+    expires: Optional[datetime.date] = None
     deleteonexpiry: Optional[str] = None
     companyregno: Optional[str] = None
     client_delete_prohibited_lock: Optional[str] = None
