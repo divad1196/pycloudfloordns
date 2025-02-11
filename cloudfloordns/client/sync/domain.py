@@ -1,6 +1,6 @@
 # from dataclasses import dataclass, field
 from collections import ChainMap
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from cloudfloordns.models import Contact, Domain, DomainPayload, TLDPrice
 
@@ -12,37 +12,23 @@ class Domains:
     def __init__(self, client) -> None:
         self._client = client
 
-    def _raw_pricelist(self, timeout=None):
-        url = "/domain/tld/pricelist"
-        return self.client.get(
-            url,
-            timeout=timeout,
-        )
-
-    def get_pricelist(self, timeout=None) -> List[TLDPrice]:
-        res = self._raw_pricelist(timeout=timeout)
-        return [TLDPrice.model_validate(d) for d in res]
-
-    def _raw_list(self, limit=None, offset=None, timeout=None):
+    def _raw_pricelist(self, timeout=None) -> list:
         """
         List all domains
         """
-        params = {"limit": limit or DEFAULT_LIMIT}
-        if offset:
-            params["offset"] = offset
-        url = "/domain"
+        url = "/domain/tld/pricelist"
         return self._client.get(
             url,
-            params=params,
+            # data=data,
             timeout=timeout,
         )
 
-    def list(self, limit=None, offset=None, timeout=None) -> List[Domain]:
+    def pricelist(self, timeout=None) -> list[TLDPrice]:
         """
         List all domains
         """
-        res = self._raw_list(limit=limit, offset=offset, timeout=timeout)
-        return [Domain.model_validate(d) for d in res]
+        res = self._raw_pricelist(timeout=timeout)
+        return [TLDPrice.model_validate(p) for p in res]
 
     def get_by_name(self, domainname, zone_enabled=None, timeout=None):
         res = self.list(
@@ -118,6 +104,27 @@ class Domains:
             data=data,
             timeout=timeout,
         )
+
+    def _raw_list(self, limit=None, offset=None, timeout=None) -> list:
+        """
+        List all domains
+        """
+        data = {"limit": limit or DEFAULT_LIMIT}
+        if offset:
+            data["offset"] = offset
+        url = "/domain"
+        return self._client.get(
+            url,
+            data=data,
+            timeout=timeout,
+        )
+
+    def list(self, limit=None, offset=None, timeout=None) -> list[Domain]:
+        """
+        List all domains
+        """
+        res = self._raw_list(limit=limit, offset=offset, timeout=timeout)
+        return [Domain.model_validate(d) for d in res]
 
     # Only updating contacts does not seem to work
     def update_contact(
